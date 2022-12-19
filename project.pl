@@ -4,13 +4,20 @@
 
 % Qualidade dos Dados
 eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
-%usa maplist no prox.
+eventosSemSalasDiaSemana(DiaSemana, []).
+eventosSemSalasDiaSemana(DiaSemana, EventosSemSala) :- eventosSemSalas([ID|R]),
+                                                       horario(ID, DiaSemana, _, _, _, _,),
+                                                       EventosSemSala = [ID|_],
+                                                       eventosSemSalasDiaSemana(DiaSemana, R);
+                                                       eventosSemSalas([ID|R]),
+                                                       eventosSemSalasDiaSemana(DiaSemana, R).
+
 
 % Pesquisas Simples
-organizaEventos([], Periodo, EventosNoPeriodo) :- true.              % Caso Terminal
+organizaEventos([], Periodo, []).              % Caso Terminal
 organizaEventos([ID|R], Periodo, EventosNoPeriodo) :- horario(ID, _, _, _, _, Periodo),     
-                                                     organizaEventos(R, Periodo, [ID|_]); %NOT WORKING YET, RETURNS TRUE
-                                                     organizaEventos(R, Periodo, [_]).
+                                                     organizaEventos(R, Periodo, [ID|R]); %NOT WORKING YET, RETURNS TRUE
+                                                     organizaEventos(R, Periodo, EventosNoPeriodo).
 
 
                                     
