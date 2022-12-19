@@ -3,5 +3,6 @@
 :- ['dados.pl'], ['keywords.pl']. % ficheiros a importar.
 
 % Qualidade dos Dados
+eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
 
-eventosSemSalas(EventosSemSala) :- setof(ID, evento(ID,_,_,_,_), EventosSemSala).
+                                    
