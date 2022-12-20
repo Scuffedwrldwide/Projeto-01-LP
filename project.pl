@@ -4,12 +4,11 @@
 
 % Qualidade dos Dados
 eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
-%eventosSemSalasDiaSemana(DiaSemana, []).
-eventosSemSalasDiaSemana(DiaSemana, EventosSemSala) :- (eventosSemSalas([ID|_]),
-                                                       horario(ID, DiaSemana, _, _, _, _,),
-                                                       eventosSemSalasDiaSemana(DiaSemana, R));
-                                                       (eventosSemSalas(R),
-                                                       eventosSemSalasDiaSemana(DiaSemana, R)).
+eventosSemSalasDiaSemana(_, EventosSemSala).
+eventosSemSalasDiaSemana(DiaSemana, Acc, EventosSemSala) :-
+    eventosSemSalas([ID|R]),
+    horario(ID, DiaSemana, _, _, _, _),
+    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc]).
 
 
 % Pesquisas Simples
