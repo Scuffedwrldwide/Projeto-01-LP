@@ -13,10 +13,14 @@ eventosSemSalasDiaSemana(DiaSemana, EventosSemSala) :- (eventosSemSalas([ID|_]),
 
 
 % Pesquisas Simples
-%organizaEventos([], Periodo, [_|_]).             % Caso Terminal
-%organizaEventos([ID|R], Periodo, EventosNoPeriodo) :- (horario(ID, _, _, _, _, Periodo), organizaEventos(R, Periodo, [ID|_])); %NOT WORKING YET, RETURNS TRUE
-%                                                       organizaEventos(R, Periodo, [_|R]).
-pertenceHorario(ID, Periodo) :- horario(ID, _, _, _, _, Periodo).
-organizaEventos(Eventos, Periodo, EventosNoPeriodo) :- convlist(pertenceHorario(IDs, Periodo), IDs, EventosNoPeriodo).
+
+organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).
+organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
+    horario(ID, _, _, _, _, P),
+    (P = Periodo ->
+        organizaEventos(R, Periodo, [ID|Acc], EventosNoPeriodo)
+    ;
+        organizaEventos(R, Periodo, Acc, EventosNoPeriodo)
+    ).
 
                                     
