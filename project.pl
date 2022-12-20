@@ -21,13 +21,14 @@ eventosSemSalasDiaSemana(DiaSemana, Acc, Eventos) :-
 
 % Pesquisas Simples
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], ToReverse), reverse(ToReverse, EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados
+    organizaEventos(Eventos, Periodo, [], ToSort), msort(ToSort, EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados
                                                         % MIGHT BE ABLE TO REMOVE THIS
 /* Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. 
    o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos  
    sendo Periodo o periodo desejado e P a variavel constante no horario/6     */
 ehPeriodo(Periodo, P) :-
-    sub_atom(P, Before, 2, After, Periodo).
+    sub_atom(Periodo, 1, 1, After, Num),    % Verifica que existe um Numero no periodo dado
+    sub_atom(P, Before, 1, After, Num).     % e que esse numero está presente no horario
 
 organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
@@ -38,4 +39,26 @@ organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
         organizaEventos(R, Periodo, Acc, EventosNoPeriodo)
     ).
 
-                                    
+
+eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-
+    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variável acumuladora para os IDs encontrados
+%eventosMenoresQue(_, Eventos, Eventos).
+eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue) :-
+    horario(ID, _, _, _, Time, _),
+    (Duracao is Time ->
+        eventosMenoresQue(Duracao, [ID|Acc], ListaEventosMenoresQue)
+    ;
+        eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue)   
+    ).
+
+eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.
+
+/*TODO
+
+- Implement own sorting system
+- Slim down ehPeriodo
+- Fix whatever the fuck is up with Eventos
+- less reverse() use
+- figure out singletons
+
+*/
