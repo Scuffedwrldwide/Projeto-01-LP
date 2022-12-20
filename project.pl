@@ -4,16 +4,19 @@
 
 % Qualidade dos Dados
 eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
-eventosSemSalasDiaSemana(_, EventosSemSala).
+
+eventosSemSalasDiaSemana(DiaSemana, EventosSemSala) :-
+    eventosSemSalasDiaSemana(DiaSemana, [], EventosSemSala).     % Inclui uma variável acumuladora para os eventos encontrados
+eventosSemSalasDiaSemana(_, EventosSemSala, EventosSemSala).     % Conclui a execução quando a variável acumuladora é unificada com os eventos sem sala
 eventosSemSalasDiaSemana(DiaSemana, Acc, EventosSemSala) :-
-    eventosSemSalas([ID|R]),
+    eventosSemSalas([ID|R]),                                    % NOT EXCLUDING ID ON NEXT LOOP, FIX LATER
     horario(ID, DiaSemana, _, _, _, _),
-    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc]).
+    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc], EventosSemSala).
 
 
 % Pesquisas Simples
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], EventosNoPeriodo).        % Inclui uma variável acumuladora para os periodos encontrados
+    organizaEventos(Eventos, Periodo, [], EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados
 
 /* Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. 
    o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos  
