@@ -9,14 +9,15 @@ eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), Ev
 eventosSemSalasDiaSemana(DiaSemana, Eventos) :-
     eventosSemSalasDiaSemana(DiaSemana, [], Eventos).           % Inclui uma variável acumuladora para os eventos encontrados
 
-eventosSemSalasDiaSemana(_, Eventos, Eventos).    
-eventosSemSalasDiaSemana(DiaSemana, Acc, Eventos) :-
-    (
-    eventosSemSalas(Eventos),                                   % NOT EXCLUDING ID ON NEXT LOOP, FIX LATER
-    ([ID|R] = Eventos),
+eventosSemSalasDiaSemana(_, Eventos, []) :- Eventos \= [] .     % Caso terminal, impede a unificação de Eventos com []
+eventosSemSalasDiaSemana(DiaSemana, Acc, [ID|R]) :-
+    eventosSemSalas(EventosSemSala),
+    member(ID, EventosSemSala),                                 % Verifica a correspondencia de um ID a um evento sem sala
     horario(ID, DiaSemana, _, _, _, _),
-    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc], R));
-    eventosSemSalasDiaSemana(DiaSemana, Acc, R).
+    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc], R).           % Adiciona o ID encontrado ao acumulador
+eventosSemSalasDiaSemana(DiaSemana, Acc, [_|R]) :-              % Caso o ID não corresponda, este não é adicionado
+    eventosSemSalasDiaSemana(DiaSemana, Acc, R).                % Avança-se recursiamente para os restantes eventos
+
 
 
 % Pesquisas Simples
