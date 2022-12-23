@@ -6,20 +6,21 @@
 eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
 
 
-eventosSemSalasDiaSemana(DiaSemana, Eventos) :- findall(ID, horario(ID, DiaSemana, _, _, _, _), NoDia),
-                                                eventosSemSalas(EventosSemSala),
-                                                intersection(NoDia, EventosSemSala, Eventos).
+eventosSemSalasDiaSemana(DiaSemana, Eventos) :- 
+    findall(ID, horario(ID, DiaSemana, _, _, _, _), NoDia),
+    eventosSemSalas(EventosSemSala),
+    intersection(NoDia, EventosSemSala, Eventos).
 
 
 eventosSemSalasPeriodo([], []).
 eventosSemSalasPeriodo([Periodo|R], [Evento|Outros]) :-
-                                              
-                                              findall(ID, (horario(ID, _, _, _, _, P), 
-                                                           ehPeriodo(Periodo, P)), 
-                                                           NoPeriodo),
-                                              eventosSemSalas(EventosSemSala),
-                                              intersection(NoPeriodo, EventosSemSala, Evento),
-                                              eventosSemSalasPeriodo(R, Outros).
+    findall(ID, 
+                (horario(ID, _, _, _, _, P), 
+                 ehPeriodo(Periodo, P)),
+            NoPeriodo),
+    eventosSemSalas(EventosSemSala),
+    intersection(NoPeriodo, EventosSemSala, Evento),
+    eventosSemSalasPeriodo(R, Outros).
 
 
 % Pesquisas Simples
