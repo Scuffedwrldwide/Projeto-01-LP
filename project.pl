@@ -25,7 +25,7 @@ eventosSemSalasPeriodo([Periodo|R], [Evento|Outros]) :-
 
 % Pesquisas Simples
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], ToSort), bubbleSort(ToSort, EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados.
+    organizaEventos(Eventos, Periodo, [], ToSort), bubbleSort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os periodos encontrados.
                                                         
 organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
@@ -38,7 +38,7 @@ organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
 
 
 eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-
-    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variável acumuladora para os IDs encontrados.
+    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variavel acumuladora para os IDs encontrados.
 %eventosMenoresQue(_, Eventos, Eventos).
 eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue) :-
     horario(ID, _, _, _, Time, _),
@@ -54,19 +54,19 @@ eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Dur
 
 
 bubbleSort(ToSort, Sorted) :-
-    switcharoo(ToSort, Sort1), !,         % Após a troca de elementos, a chamada recursiva %
-    bubbleSort(Sort1, Sorted).            % é feita até não serem possíveis mais trocas.   %
+    switcharoo(ToSort, Sort1), !,       % Apos a troca de elementos, a chamada recursiva  %
+    bubbleSort(Sort1, Sorted).          % e efetuada ate nao serem possiveis mais trocas. %
 
-bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a ordenar e a ordenada são iguais.
+bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista aordenar e a ordenada sao iguais.
 
-switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos é necessária.
-switcharoo([Z|R], [Z|R1]) :-            % Caso recursivo, que "investiga" a lista em profundidade.
-    switcharoo(R, R1).                    
+switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos e necessaria.
+switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
+    switcharoo(R1, R2).                    
 
 
 
-ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. %
-    sub_atom(P, _, _, _, Periodo).      %  o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos   %
+ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. %
+    sub_atom(P, _, _, _, Periodo).      %  o predicado ehPeriodo/2 permite verificar a pertenca a um destes periodos   %
                                         %  sendo Periodo o periodo desejado e P a variavel constante no horario/6.     %
 
 
@@ -75,11 +75,9 @@ ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo re
 /*TODO
 
 - Metapredicados no organizaEventos
-- Implement own sorting system
-- Slim down ehPeriodo √
-- Fix whatever the fuck is up with Eventos √
-- less reverse() use
-- figure out singletons
+- Implement own sorting system      (DONE)
+- Slim down ehPeriodo               (DONE)
+- less reverse() use                (DONE)
+- figure out singletons             (DONE)
 - less findall()
-
 */
