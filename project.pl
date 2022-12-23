@@ -19,48 +19,13 @@ eventosSemSalasPeriodo([Periodo|R], [Evento|Outros]) :-
                                                            NoPeriodo),
                                               eventosSemSalas(EventosSemSala),
                                               intersection(NoPeriodo, EventosSemSala, Evento),
-                                              %append(Corrente, Evento),
                                               eventosSemSalasPeriodo(R, Outros).
-
-/*eventosSemSalasDiaSemana(DiaSemana, Eventos) :-
-    eventosSemSalasDiaSemana(DiaSemana, [], Eventos).           % Inclui uma variável acumuladora para os eventos encontrados
-
-eventosSemSalasDiaSemana(_, Eventos, []) :- Eventos \= [] .     % Caso terminal, impede a unificação de Eventos com []
-eventosSemSalasDiaSemana(DiaSemana, Acc, [ID|R]) :-
-    eventosSemSalas(EventosSemSala),
-    member(ID, EventosSemSala),                                 % Verifica a correspondencia de um ID a um evento sem sala
-    horario(ID, DiaSemana, _, _, _, _),
-    eventosSemSalasDiaSemana(DiaSemana, [ID|Acc], R).           % Adiciona o ID encontrado ao acumulador
-eventosSemSalasDiaSemana(DiaSemana, Acc, [_|R]) :-              % Caso o ID não corresponda, este não é adicionado
-    eventosSemSalasDiaSemana(DiaSemana, Acc, R).                % Avança-se recursiamente para os restantes eventos
-
-
-eventosSemSalasPeriodo(Periodo, Eventos) :-
-    eventosSemSalasPeriodo(Periodo, [], Eventos).               % Inclui uma variável acumuladora para os eventos encontrados
-
-eventosSemSalasPeriodo(_, Eventos, []) :- Eventos \= [] .       % Caso terminal, impede a unificação de Eventos com []
-eventosSemSalasPeriodo([Periodo | Next] , Acc, [ID|R]) :-
-    eventosSemSalas(EventosSemSala),
-    member(ID, EventosSemSala),                                 % Verifica a correspondencia de um ID a um evento sem sala
-    horario(ID, _, _, _, _, P),
-    ehPeriodo(Periodo, P),                                      % Um evento pode ocorrer em multiplos períodos
-    eventosSemSalasPeriodo(Next, [ID|Acc], R).                  % Adiciona o ID encontrado ao acumulador
-eventosSemSalasPeriodo([Periodo | Next], Acc, [_|R]) :-         % Caso o ID não corresponda, este não é adicionado
-    eventosSemSalasPeriodo(Next, Acc, R).                       % Avança-se recursiamente para os restantes eventos
-*/
 
 
 % Pesquisas Simples
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], ToSort), msort(ToSort, EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados
-                                                        % MIGHT BE ABLE TO REMOVE THIS
-/* Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. 
-   o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos  
-   sendo Periodo o periodo desejado e P a variavel constante no horario/6     */
-ehPeriodo(Periodo, P) :-
-    sub_atom(Periodo, 1, 1, After, Num),    % Verifica que existe um Numero no periodo dado
-    sub_atom(P, _, 1, After, Num).     % e que esse numero está presente no horario
-
+    organizaEventos(Eventos, Periodo, [], ToSort), bubbleSort(ToSort, EventosNoPeriodo).    % Inclui uma variável acumuladora para os periodos encontrados.
+                                                        
 organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
     horario(ID, _, _, _, _, P),
@@ -72,7 +37,7 @@ organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
 
 
 eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-
-    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variável acumuladora para os IDs encontrados
+    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variável acumuladora para os IDs encontrados.
 %eventosMenoresQue(_, Eventos, Eventos).
 eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue) :-
     horario(ID, _, _, _, Time, _),
@@ -84,8 +49,27 @@ eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue) :-
 
 eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.
 
+% Auxiliares
+
+
+bubbleSort(ToSort, Sorted) :-
+  switcharoo(ToSort, Sort1), !,         % Após a troca de elementos, a chamada recursiva %
+  bubbleSort(Sort1, Sorted).            % é feita até não serem possíveis mais trocas.   %
+
+bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a ordenar e a ordenada são iguais.
+
+switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos é necessária.
+switcharoo([Z|R], [Z|R1]) :-            % Caso recursivo, que "investiga" a lista em profundidade.
+  switcharoo(R, R1).                    
+
+
+
+ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. %
+    sub_atom(P, _, _, _, Periodo).      %  o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos   %
+                                        %  sendo Periodo o periodo desejado e P a variavel constante no horario/6.     %
 /*TODO
 
+- Metapredicados no organizaEventos
 - Implement own sorting system
 - Slim down ehPeriodo √
 - Fix whatever the fuck is up with Eventos √
