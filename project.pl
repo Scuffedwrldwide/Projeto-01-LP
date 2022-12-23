@@ -67,6 +67,10 @@ switcharoo([Z|R], [Z|R1]) :-            % Caso recursivo, que "investiga" a list
 ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo resultam da concatenação de, eg., p1_p2. %
     sub_atom(P, _, _, _, Periodo).      %  o predicado ehPeriodo/2 permite verificar a pertença a um destes periodos   %
                                         %  sendo Periodo o periodo desejado e P a variavel constante no horario/6.     %
+
+
+
+
 /*TODO
 
 - Metapredicados no organizaEventos
