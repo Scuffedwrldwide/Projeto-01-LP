@@ -54,14 +54,14 @@ eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Dur
 
 
 bubbleSort(ToSort, Sorted) :-
-  switcharoo(ToSort, Sort1), !,         % Após a troca de elementos, a chamada recursiva %
-  bubbleSort(Sort1, Sorted).            % é feita até não serem possíveis mais trocas.   %
+    switcharoo(ToSort, Sort1), !,         % Após a troca de elementos, a chamada recursiva %
+    bubbleSort(Sort1, Sorted).            % é feita até não serem possíveis mais trocas.   %
 
 bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a ordenar e a ordenada são iguais.
 
 switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos é necessária.
 switcharoo([Z|R], [Z|R1]) :-            % Caso recursivo, que "investiga" a lista em profundidade.
-  switcharoo(R, R1).                    
+    switcharoo(R, R1).                    
 
 
 
