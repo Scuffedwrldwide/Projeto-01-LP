@@ -36,19 +36,12 @@ organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
         organizaEventos(R, Periodo, Acc, EventosNoPeriodo)
     ).
 
+eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.
 
 eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-
-    eventosMenoresQue(Duracao, [], ListaEventosMenoresQue).     % Inclui uma variavel acumuladora para os IDs encontrados.
-%eventosMenoresQue(_, Eventos, Eventos).
-eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue) :-
-    horario(ID, _, _, _, Time, _),
-    (Duracao is Time ->
-        eventosMenoresQue(Duracao, [ID|Acc], ListaEventosMenoresQue)
-    ;
-        eventosMenoresQue(Duracao, Acc, ListaEventosMenoresQue)   
-    ).
+    findall(ID, eventosMenoresQueBool(ID, Duracao), ListaEventosMenoresQue).
 
-eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.
+
 
 % Auxiliares
 
