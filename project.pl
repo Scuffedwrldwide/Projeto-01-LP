@@ -99,14 +99,14 @@ ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :
 
 % Auxiliares
 
-discFinder(ListaTurnos, ListaDisciplinas) :-        % Encontra as disciplinas associadas a uma dada lista de IDs de turnos.
+discFinder(ListaTurnos, ListaDisciplinas) :-      % Encontra as disciplinas associadas a uma dada lista de IDs de turnos.
     findall(Disciplina, (member(ID, ListaTurnos), evento(ID, Disciplina, _, _, _)), Lista),
     sort(Lista, ListaDisciplinas).
 
-idsCurso(Curso, ListaIDs) :-                        % Encontra os IDs dos turnos de um dado curso. 
+idsCurso(Curso, ListaIDs) :-                      % Encontra os IDs dos turnos de um dado curso. 
     findall(ID, turno(ID, Curso, _, _), Lista),
     sort(Lista, ListaIDs).
-idsCurso(Curso, ListaIDs, Ano) :-                   % Encontra os IDs dos turnos de um dado curso, limitado a um dado ano. 
+idsCurso(Curso, ListaIDs, Ano) :-                 % Encontra os IDs dos turnos de um dado curso, limitado a um dado ano. 
     findall(ID, turno(ID, Curso, Ano, _), Lista),
     sort(Lista, ListaIDs).
 
