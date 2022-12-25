@@ -54,6 +54,10 @@ organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-
         intersection(ListaDisciplinas, TotalDisc2, Sem2),
     Sem1 \= [], Sem2 \= [].
     
+numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras) :- 
+    findall(Time, (horario(ID, DiaSemana, HoraInicio, HoraFim, Time, P), 
+                   ehPeriodo(Periodo, P)), ListaHoras),
+    sum_list(ListaHoras, SomaHoras).
 
 % Auxiliares
 
