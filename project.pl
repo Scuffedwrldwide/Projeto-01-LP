@@ -14,7 +14,7 @@ eventosSemSalasPeriodo([], []).
 eventosSemSalasPeriodo([Periodo|R], [Evento|Outros]) :-
     findall(ID, 
                 (horario(ID, _, _, _, _, P), 
-                 ehPeriodo(Periodo, P)),
+                 (P = Periodo; ehPeriodo(Periodo, P))),
             NoPeriodo),
     eventosSemSalas(EventosSemSala),
     intersection(NoPeriodo, EventosSemSala, Evento),
@@ -93,36 +93,17 @@ ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :
     (HoraInicioDada =< HoraInicioEvento,
      HoraFimDada >= HoraFimEvento,
      Horas is HoraFimEvento - HoraInicioEvento, !)), % Evento 'dentro' do Slot
-    \+ Horas =< 0.                                % Evento nao se sobrepoe ao slot
+    \+ Horas =< 0.                                   % Garante que o evento se sobrepoe ao slot
 
-numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras, ListaHoras) :- 
+numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras) :- 
     salas(TipoSala, ListaSalas),
     findall(Horas, (member(Sala, ListaSalas),
                     evento(ID, _, _, _, Sala),
                     horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
                     ((P = Periodo; ehPeriodo(Periodo, P)) -> 
-                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), %% Called twice or thrice on 78?? DIDNT USE CUT LMAO
-                    ListaHoras), %%% TEMP SOLUTION %%%
+                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))),
+                    ListaHoras),
     sum_list(ListaHoras, SomaHoras).
-
-/*numHorasOcupadas2(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras, ListaHoras, ListaIDs) :- 
-    salas(TipoSala, ListaSalas),
-    findall(Horas, (member(Sala, ListaSalas),
-                    evento(ID, _, _, _, Sala),
-                    horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
-                    (   ehPeriodo(Periodo, P) -> 
-                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), 
-                    ListaHoras), %%% TEMP SOLUTION %%%
-    findall(ID, (member(Sala, ListaSalas),
-                 evento(ID, _, _, _, Sala),
-                 horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
-                (   ehPeriodo(Periodo, P),! -> 
-                    ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), 
-                IDsToSort),
-    sort(IDsToSort, ListaIDs),            
-   /* findall(Horas, (horario(ID, DiaSemana, _, _, Horas, _),
-                    member(ID, ListaIDs)), ListaHoras),*/
-    sum_list(ListaHoras, SomaHoras).*/
 
 ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-
     salas(TipoSala, ListaSalas),
@@ -133,13 +114,20 @@ percentagem(SomaHoras, Max, Percentagem) :-
     Percentagem is SomaHoras / Max * 100.
 
 ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Resultados) :-
-    findall((segunda-feira, TipoSala, Arr), 
-            (numHorasOcupadas(_, TipoSala, segunda-feira, HoraInicio, HoraFim, SomaHoras),
+   ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Resultados, 
+   [p1, p2, p3, p4], 
+   [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]).
+
+ocupacaoCritica(_, _, _, _, [], []).
+
+ocupacaoCritica(HoraInicio, HoraFim, Threshhold, [Tuplos|R3], [Periodo|R1], [Dia|R2]) :-
+    findall((Dia, TipoSala, Arr), 
+           (numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
             ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max),
             percentagem(SomaHoras, Max, Percentagem),
             ceiling(Percentagem, Arr),
-            Percentagem > Threshhold), Resultados).     %perecentages > 100 and days dont show up
-
+            Percentagem > Threshhold), Tuplos), 
+    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, R3, R1, R2).  
 
 % Auxiliares
 
@@ -163,12 +151,13 @@ switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elemento
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
     switcharoo(R1, R2).                    
 
-ehPeriodo(Periodo, P) :-                %  Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. %
-    sub_atom(P, _, _, _, Periodo).      %  o predicado ehPeriodo/2 permite verificar a pertenca a um destes periodos   %
-                                        %  sendo Periodo o periodo desejado e P a variavel constante no horario/6.     %
+ehPeriodo(Periodo, P) :-             % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
+    sub_atom(Periodo, 1, 1, _, Num), % Este predicado determina que Num corresponde ao numero do periodo.
+    sub_atom(P, _, _, _, Num).       % Seguindo-se a condição que este Num esta presente no semestre
 
 
 
+    
 
 /*TODO
 
