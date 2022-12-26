@@ -25,7 +25,7 @@ eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-
 
 % Pesquisas Simples
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], ToSort), bubbleSort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os periodos encontrados.
+    organizaEventos(Eventos, Periodo, [], ToSort), sort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os periodos encontrados.
                                                         
 organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
@@ -115,21 +115,15 @@ ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-
 percentagem(SomaHoras, Max, Percentagem) :-
     Percentagem is SomaHoras / Max * 100.
 
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Resultados) :-
-   ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Resultados, 
-   [p1, p2, p3, p4], 
-   [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]).
-
-ocupacaoCritica(_, _, _, _, [], []).
-
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, [Tuplos|R3], [Periodo|R1], [Dia|R2]) :-
+ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Tuplos) :-
     findall((Dia, TipoSala, Arr), 
-           (numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
+           (member(Periodo, [p1, p2, p3, p4]),
+            member(Dia, [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]),
+            numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
             ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max),
             percentagem(SomaHoras, Max, Percentagem),
             ceiling(Percentagem, Arr),
-            Percentagem > Threshhold), Tuplos), 
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, R3, R1, R2).  
+            Percentagem > Threshhold), Tuplos).
 
 % Auxiliares
 
