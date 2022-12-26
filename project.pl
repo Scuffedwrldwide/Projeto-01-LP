@@ -65,8 +65,6 @@ evolucaoHorasCurso(Curso, Evolucao) :-
     sort(A, ListaAnos),
     evolucaoHorasCurso(ListaAnos, Curso, Evolucao).
     
-
-
 evolucaoHorasCurso([], _, []).
 evolucaoHorasCurso([Ano|R1], Curso, [(Ano,p1,Horas1), 
                                      (Ano,p2,Horas2),
@@ -85,17 +83,63 @@ evolucaoHorasCurso([Ano|R1], Curso, [(Ano,p1,Horas1),
 ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :-
     ((HoraInicioDada =< HoraInicioEvento,
      HoraFimDada =< HoraFimEvento,
-     Horas is HoraFimDada - HoraInicioEvento);    % Evento 'depois' do slot
+     Horas is HoraFimDada - HoraInicioEvento, !);    % Evento 'depois' do slot
     (HoraInicioDada >= HoraInicioEvento,
      HoraFimDada >= HoraFimEvento,
-     Horas is HoraFimEvento - HoraInicioDada);    % Evento 'depois' do slot
+     Horas is HoraFimEvento - HoraInicioDada, !);    % Evento 'depois' do slot
     (HoraInicioDada >= HoraInicioEvento,
      HoraFimDada =< HoraFimEvento,
-     Horas is HoraFimDada - HoraInicioDada);      % Slot 'dentro' do evento
+     Horas is HoraFimDada - HoraInicioDada, !);      % Slot 'dentro' do evento
     (HoraInicioDada =< HoraInicioEvento,
      HoraFimDada >= HoraFimEvento,
-     Horas is HoraFimEvento - HoraInicioEvento)), % Evento 'dentro' do Slot
+     Horas is HoraFimEvento - HoraInicioEvento, !)), % Evento 'dentro' do Slot
     \+ Horas =< 0.                                % Evento nao se sobrepoe ao slot
+
+numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras, ListaHoras) :- 
+    salas(TipoSala, ListaSalas),
+    findall(Horas, (member(Sala, ListaSalas),
+                    evento(ID, _, _, _, Sala),
+                    horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
+                    ((P = Periodo; ehPeriodo(Periodo, P)) -> 
+                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), %% Called twice or thrice on 78?? DIDNT USE CUT LMAO
+                    ListaHoras), %%% TEMP SOLUTION %%%
+    sum_list(ListaHoras, SomaHoras).
+
+/*numHorasOcupadas2(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras, ListaHoras, ListaIDs) :- 
+    salas(TipoSala, ListaSalas),
+    findall(Horas, (member(Sala, ListaSalas),
+                    evento(ID, _, _, _, Sala),
+                    horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
+                    (   ehPeriodo(Periodo, P) -> 
+                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), 
+                    ListaHoras), %%% TEMP SOLUTION %%%
+    findall(ID, (member(Sala, ListaSalas),
+                 evento(ID, _, _, _, Sala),
+                 horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
+                (   ehPeriodo(Periodo, P),! -> 
+                    ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))), 
+                IDsToSort),
+    sort(IDsToSort, ListaIDs),            
+   /* findall(Horas, (horario(ID, DiaSemana, _, _, Horas, _),
+                    member(ID, ListaIDs)), ListaHoras),*/
+    sum_list(ListaHoras, SomaHoras).*/
+
+ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-
+    salas(TipoSala, ListaSalas),
+    length(ListaSalas, NumSalas),
+    Max is NumSalas * (HoraFim - HoraInicio).
+
+percentagem(SomaHoras, Max, Percentagem) :-
+    Percentagem is SomaHoras / Max * 100.
+
+ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Resultados) :-
+    findall((segunda-feira, TipoSala, Arr), 
+            (numHorasOcupadas(_, TipoSala, segunda-feira, HoraInicio, HoraFim, SomaHoras),
+            ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max),
+            percentagem(SomaHoras, Max, Percentagem),
+            ceiling(Percentagem, Arr),
+            Percentagem > Threshhold), Resultados).     %perecentages > 100 and days dont show up
+
 
 % Auxiliares
 
