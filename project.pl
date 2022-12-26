@@ -11,13 +11,14 @@ eventosSemSalasDiaSemana(DiaSemana, Eventos) :-
     intersection(NoDia, EventosSemSala, Eventos).
 
 eventosSemSalasPeriodo([], []).
-eventosSemSalasPeriodo([Periodo|R], [Evento|Outros]) :-
+eventosSemSalasPeriodo([Periodo|R], EventosSemSala) :-
     findall(ID, 
                 (horario(ID, _, _, _, _, P), 
-                 (P = Periodo; ehPeriodo(Periodo, P))),
+                 ehPeriodo(Periodo, P)),
             NoPeriodo),
     eventosSemSalas(EventosSemSala),
-    intersection(NoPeriodo, EventosSemSala, Evento),
+    intersection(NoPeriodo, EventosSemSala, SemSalaNoPeriodo),
+    union(SemSalaNoPeriodo, Outros, EventosSemSala),
     eventosSemSalasPeriodo(R, Outros).
 
 
@@ -100,9 +101,9 @@ numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras) :
     findall(Horas, (member(Sala, ListaSalas),
                     evento(ID, _, _, _, Sala),
                     horario(ID, DiaSemana, HoraInicioEvento, HoraFimEvento, _, P),
-                    ((P = Periodo; ehPeriodo(Periodo, P)) -> 
-                        ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas))),
-                    ListaHoras),
+                    ehPeriodo(Periodo, P),
+                    ocupaSlot(HoraInicio, HoraFim, HoraInicioEvento, HoraFimEvento, Horas)),
+            ListaHoras),
     sum_list(ListaHoras, SomaHoras).
 
 ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-
@@ -151,13 +152,9 @@ switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elemento
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
     switcharoo(R1, R2).                    
 
-ehPeriodo(Periodo, P) :-             % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
-    sub_atom(Periodo, 1, 1, _, Num), % Este predicado determina que Num corresponde ao numero do periodo.
-    sub_atom(P, _, _, _, Num).       % Seguindo-se a condição que este Num esta presente no semestre
-
-
-
-    
+ehPeriodo(Periodo, P) :-                % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
+    sub_atom(Periodo, 1, 1, _, Num),    % Este predicado determina que Num corresponde ao numero do periodo,
+    sub_atom(P, _, _, _, Num).          % seguindo-se a condicao que este Num esta presente no semestre.   
 
 /*TODO
 
