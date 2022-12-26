@@ -11,15 +11,16 @@ eventosSemSalasDiaSemana(DiaSemana, Eventos) :-
     intersection(NoDia, EventosSemSala, Eventos).
 
 eventosSemSalasPeriodo([], []).
-eventosSemSalasPeriodo([Periodo|R], EventosSemSala) :-
+eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-
     findall(ID, 
                 (horario(ID, _, _, _, _, P), 
+                 
+                 member(Periodo, Periodos),
                  ehPeriodo(Periodo, P)),
             NoPeriodo),
     eventosSemSalas(EventosSemSala),
-    intersection(NoPeriodo, EventosSemSala, SemSalaNoPeriodo),
-    union(SemSalaNoPeriodo, Outros, EventosSemSala),
-    eventosSemSalasPeriodo(R, Outros).
+    intersection(NoPeriodo, EventosSemSala, SemSalaUnsorted),
+    sort(SemSalaUnsorted, SemSalaNoPeriodo).
 
 
 % Pesquisas Simples
