@@ -169,32 +169,19 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosCriticos, [Dia|R1], [TipoS
 %               casosCriticos(segunda-feira,pequenosAnfiteatros,93),                                                       /* Segunda - pequenosAnfiteatros */    %
 %               casosCriticos(sexta-feira,labsQuimica,89)]                                                                 /* Sexta - labsQuimica */              %
 % Este resultado e consistente com o exemplo dado no enunciado. No entanto, nao esta claro que seja este o criterio pretendido.                                   %
-% Como tal, segue-se a implementacao de um predicado que se baseia na ordenacao dos casos criticos por ordem alfabetica do dia e sala respetivamente, seguida da  %
-% ordenacao ascendente com base na percentagem                                                                                                                    %
+% Como tal, segue-se a implementacao de um predicado que se baseia na aplicação do predicado built-in sort/2                                                      %
 
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :-
-    sort([segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira], Dias), % Ordenacao alfabetica dos dias da semana, de acordo com a justificacao acima 
-    findall(TiposSala, salas(TiposSala, _), Salas),
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos, Dias, Salas).
-
-ocupacaoCritica(_, _, _, [], [], _).
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, [_|R1], []) :-  % A ordem da lista de tuplos rege-se respetivamente por Dia, Tipo de Sala e Percentagem                       %
-    findall(TiposSala, salas(TiposSala, _), Salas),                         % assim, os casos criticos sao analizados dia a dia. Esgotada uma semana, analiza-se o tipo de sala seguinte. %     
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, R1, Salas).
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosCriticos, [Dia|R1], [TipoSala|R2]) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
-    findall(casosCriticos(Dia, TipoSala, Arr),                                              % Isto e, os casos nos quais a ocupacao excede um dado valor.                  %
+ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
+    findall(casosCriticos(Dia, TipoSala, Arr),             % estes sao os casos nos quais a ocupacao excede um dado valor.                %
                (member(Periodo, [p1, p2, p3, p4]),
-                %member(Dia, [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]),
+                member(Dia, [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]),
                 numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
                 ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max),
                 percentagem(SomaHoras, Max, Percentagem),
-                ceiling(Percentagem, Arr),                  % O valor da percentagem e arredondado por excesso
+                ceiling(Percentagem, Arr),                 % O valor da percentagem e arredondado por excesso
                 Percentagem > Threshhold),                  
-            CasosUnsorted),
-    sort(3, @<, CasosUnsorted, Casos),                     % No contexto de um dado dia e sala, a lista de casos e ordenada de forma crescente com base na percentagem  
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, [Dia|R1], R2),
-    append(Casos, CasosNext, CasosCriticos).
-
+            Tuplos),
+    sort(Tuplos, Casos).                                    
 % And Now For Something Completely Different
 /*
                       Lado 1
