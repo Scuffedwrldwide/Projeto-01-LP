@@ -169,7 +169,7 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosCriticos, [Dia|R1], [TipoS
 %               casosCriticos(segunda-feira,pequenosAnfiteatros,93),                                                       /* Segunda - pequenosAnfiteatros */    %
 %               casosCriticos(sexta-feira,labsQuimica,89)]                                                                 /* Sexta - labsQuimica */              %
 % Este resultado e consistente com o exemplo dado no enunciado. No entanto, nao esta claro que seja este o criterio pretendido.                                   %
-% Como tal, segue-se a implementacao de um predicado que se baseia na aplicação do predicado built-in sort/2                                                      %
+% Como tal, segue-se a implementacao de um predicado que se baseia na aplicacao do predicado built-in sort/2                                                      %
 
 ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
     findall(casosCriticos(Dia, TipoSala, Arr),             % estes sao os casos nos quais a ocupacao excede um dado valor.                %
