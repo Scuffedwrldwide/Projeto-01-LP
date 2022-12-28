@@ -195,20 +195,35 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
                       Lado 2
 */
 ocupacaoMesa(ListaPessoas, ListaRestricoes, OcupacaoMesa) :-
-    permutation(ListaPessoas, [X1, X2, X3, X4, X5, X6, X7, X8]),
-    check_restrictions(ListaRestricoes, X1, X2, X3, X4, X5, X6, X7, X8),!,
+    permutation(ListaPessoas, [X1, X2, X3, X4, X5, X6, X7, X8]),            % Calcula uma possivel permutacao para a disposicao da mesa
+    checkRestricoes(ListaRestricoes, X1, X2, X3, X4, X5, X6, X7, X8), !,    % Verifica se a permutacao satisfaz as restricoes
     OcupacaoMesa = [[X1, X2, X3], [X4, X5], [X6, X7, X8]].
 
-check_restrictions([], _, _, _, _, _, _, _, _).
-check_restrictions([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
-    (Restricao = cab1(X), X = X4;
-     Restricao = cab2(X), X = X5;
-     Restricao = honra(X, Y), ((X = X4, Y = X3); (X = X5, Y = X6));
-     Restricao = lado(X, Y), ((X = X7, Y = X8); (X = X2, Y = X3));
-     Restricao = naoLado(X, Y), ((X = X1, Y = X3); (X = X6, Y = X8));
-     Restricao = frente(X, Y), (X = X7, Y = X2);
-     Restricao = naoFrente(X, Y), (X = X7, Y = X3)),
-    check_restrictions(T, X1, X2, X3, X4, X5, X6, X7, X8).
+checkRestricoes([], _, _, _, _, _, _, _, _).                                % Esgotadas todas as restricoes com sucesso, verifica-se que a permutacao e valida
+checkRestricoes([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
+    ( (Restricao = cab1(X), X = X4); % A pessoa X deve sentar-se na cadeira X4
+      (Restricao = cab2(X), X = X5); % A pessoa X deve sentar-se na cadeira X5
+      
+      (Restricao = honra(X, Y), ((X = X4, Y = X6); (X = X5, Y = X3))        % A pessoa X deve sentar-se na cadeira X4 e a pessoa Y deve sentar-se a sua direita
+        );
+      (Restricao = lado(X, Y), ((X = X1, Y = X2); (X = X2, Y = X3);         % As pessoas X e Y devem sentar-se lado a lado, num qualquer lado da mesa
+                                (X = X6, Y = X7); (X = X7, Y = X8);
+                                (Y = X1, X = X2); (Y = X2, X = X3);
+                                (Y = X6, X = X7); (Y = X7, X = X8))
+        );
+      (Restricao = naoLado(X, Y), \+ ((X = X1, Y = X2); (X = X2, Y = X3);   % As pessoas X e Y nao se devem sentar lado a lado, num qualquer lado da mesa
+                                      (X = X6, Y = X7); (X = X7, Y = X8);   % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a seu lado
+                                      (Y = X1, X = X2); (Y = X2, X = X3);
+                                      (Y = X6, X = X7); (Y = X7, X = X8);)
+        );
+      (Restricao = frente(X, Y), ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8);   % As pessoas X e Y devem sentar-se frente a frente, num qualquer lado da mesa
+                                  (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8))   % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
+        );
+      (Restricao = naoFrente(X, Y), \+ ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8); % As pessoas X e Y nao se devem sentar frente a frente, num qualquer lado da mesa
+                                        (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8)) % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
+        )
+    ),
+    checkRestricoes(T, X1, X2, X3, X4, X5, X6, X7, X8).
 
 
 
