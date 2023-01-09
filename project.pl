@@ -2,7 +2,10 @@
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % para listas completas
 :- ['dados.pl'], ['keywords.pl']. % ficheiros a importar.
 
-% Qualidade dos Dados
+  /* ------------------- */
+ /* Qualidade dos Dados */
+/* ------------------- */
+
 eventosSemSalas(EventosSemSala) :-  findall(ID, evento(ID, _, _, _, semSala), EventosSemSala).
 
 eventosSemSalasDiaSemana(DiaSemana, Eventos) :-             % Lista de eventos sem sala num dado dia da semana
@@ -22,7 +25,10 @@ eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-
     sort(SemSalaUnsorted, SemSalaNoPeriodo).
 
 
-% Pesquisas Simples
+  /* ----------------- */
+ /* Pesquisas Simples */
+/* ----------------- */
+
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
     organizaEventos(Eventos, Periodo, [], ToSort), sort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os periodos encontrados.
                                                         
@@ -44,25 +50,7 @@ eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-                           
 procuraDisciplinas(Curso, ListaDisciplinasCurso) :-                                      % Lista de disciplinas de um dado curso
     idsCurso(Curso, ListaTurnosCurso),                                                  
     discFinder(ListaTurnosCurso, ListaDisciplinasCurso).
-/*
-organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                            % Organiza uma dada lista de disciplinas, dividindo-a por semestres
-    idsCurso(Curso, ListaIDsCurso),
-    organizaEventos(ListaIDsCurso, p1, IDsP1), organizaEventos(ListaIDsCurso, p2, IDsP2),% Organiza os eventos relativos ao 1o e 2o periodo
-        union(IDsP1, IDsP2, IDsSem1),
-    organizaEventos(ListaIDsCurso, p3, IDsP3), organizaEventos(ListaIDsCurso, p4, IDsP4),% Organiza os eventos relativos ao 3o e 4o periodo
-        union(IDsP3, IDsP4, IDsSem2),
-    discFinder(IDsSem1, TotalDisc1), discFinder(IDsSem2, TotalDisc2),                    % Lista de disciplinas de cada semestre
-        intersection(ListaDisciplinas, TotalDisc1, Sem1), 
-        intersection(ListaDisciplinas, TotalDisc2, Sem2),
-    Sem1 \= [], Sem2 \= [].                                                              % Condicao de falha - se nao existir uma disciplina da lista no Curso, a interseccao e vazia
-*/ % O predicado acima assenta sobre a possibilidade de uma disciplina bi-semestral, nomeadamente a disciplina 'avaliacao de projetos' no contexto de 'legi', de acordo  %
-   % com a base de dados 'dados.pl' (consultada a 27/12/2022). Neste quadro, uma potencial interacao seria:                                                              %
-   %     ?- organizaDisciplinas(['algebra linear','analitica empresarial','avaliacao de projetos', 'ciencia de materiais'], legi, L).                                    %                                                                                 
-   %     L = [[algebra linear,analitica empresarial,avaliacao de projetos],[avaliacao de projetos,ciencia de materiais]].                                                %
-   % Isto deve-se aos eventos 411, constante no p2 de legi, e 667, constante no p3. Assim, segundo uma interpretacao literal, a disciplina 'avaliacao de projetos' surge %
-   % tanto na lista referente ao semestre 1 como na lista referente ao semestre 2,nao constando duplicada em nenhuma destas listas. Pode ser adotada a interpretacao     %
-   % de que a disciplina 'avaliacao de projetos' consta repetida na lista global, pelo que abaixo se encontra definido um predicado assente nas mesmas ideias, embora    %
-   % modificado para eliminar deliberadamente esta duplicacao.                                                                                                           %
+
 organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                            % Organiza uma dada lista de disciplinas, dividindo-a por semestres
     idsCurso(Curso, ListaIDsCurso),
     organizaEventos(ListaIDsCurso, p1, IDsP1), organizaEventos(ListaIDsCurso, p2, IDsP2),% Organiza os eventos relativos ao 1o e 2o periodo
@@ -81,14 +69,6 @@ horasCurso(Periodo, Curso, Ano, TotalHoras) :-
     findall(Time, (member(ID, ListaIDsPeriodo), horario(ID, _, _, _, Time, _)), ListaHoras),
     sum_list(ListaHoras, TotalHoras).
 
-/* evolucaoHorasCurso(Curso, Evolucao) :- 
-    findall(Ano, turno(_, Curso, Ano, _), A),           % Introduz-se a lista de anos de um dado curso, sob a qual se baseia o processo recursivo
-    sort(A, ListaAnos),
-    evolucaoHorasCurso(ListaAnos, Curso, Evolucao).
-*/ % O predicado acima aplica o principio da abstracao procedimental ao apurar a lista de anos de um dado curso. Abaixo encontra-se definido %
-   % um predicado assente nas mesmas ideias, que assume deliberadamente uma lista de 3 anos, mantendo o mesmo comportamento mas apresentando %
-   % resultados redundantes, no sentido em que contem, no caso de mestrados, tuplos referentes a anos inexistentes                           %
-
 evolucaoHorasCurso(Curso, Evolucao) :-                  % Embora exista a possibilidade de um curso decorrer durante apenas um ano,              %
     evolucaoHorasCurso([1, 2, 3], Curso, Evolucao).     % a lista de anos e fixa, resultando em tuplos como (2, p1, 0) etc. no caso de mestrados %
 evolucaoHorasCurso([], _, []).                          % Caso base - uma lista vazia de anos implica que todos os tuplos ja foram gerados
@@ -104,22 +84,14 @@ evolucaoHorasCurso([Ano|R1], Curso, [(Ano,p1,Horas1),   % Lista de tuplos compos
     evolucaoHorasCurso(R1, Curso, R2).                  % Apura-se a evolucao de horas de cada ano, recursivamente
 
 
-% Ocupacoes Criticas de Slas
+  /* -------------------------- */
+ /* Ocupacoes Criticas de Slas */
+/* -------------------------- */
 
 ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :-
-    ((HoraInicioDada =< HoraInicioEvento,
-     HoraFimDada =< HoraFimEvento,
-     Horas is HoraFimDada - HoraInicioEvento, !);    % Evento 'depois' do slot
-    (HoraInicioDada >= HoraInicioEvento,
-     HoraFimDada >= HoraFimEvento,
-     Horas is HoraFimEvento - HoraInicioDada, !);    % Evento 'depois' do slot
-    (HoraInicioDada >= HoraInicioEvento,
-     HoraFimDada =< HoraFimEvento,
-     Horas is HoraFimDada - HoraInicioDada, !);      % Slot 'dentro' do evento
-    (HoraInicioDada =< HoraInicioEvento,
-     HoraFimDada >= HoraFimEvento,
-     Horas is HoraFimEvento - HoraInicioEvento, !)), % Evento 'dentro' do Slot
-    \+ Horas =< 0.                                   % Garante que o evento se sobrepoe ao slot
+    (HoraInicioDada < HoraFimEvento),
+    (HoraFimDada > HoraInicioEvento),
+    Horas is min(HoraFimDada, HoraFimEvento) - max(HoraInicioDada, HoraInicioEvento).
 
 numHorasOcupadas(Periodo, TipoSala, DiaSemana, HoraInicio, HoraFim, SomaHoras) :- % Numero de horas ocupadas num dado periodo, tipo de sala, dia da semana e slot
     salas(TipoSala, ListaSalas),
@@ -138,38 +110,6 @@ ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-    % Ocupacao maxima possivel
 
 percentagem(SomaHoras, Max, Percentagem) :-           
     Percentagem is SomaHoras / Max * 100.
-/*
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :-
-    Dias = [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira],
-    findall(TiposSala, salas(TiposSala, _), Salas),
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos, Dias, Salas).
-
-ocupacaoCritica(_, _, _, [], [], _).
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, [_|R1], []) :-  % A ordem da lista de tuplos rege-se respetivamente por Dia, Tipo de Sala e Percentagem                       %
-    findall(TiposSala, salas(TiposSala, _), Salas),                         % assim, os casos criticos sao analizados dia a dia. Esgotada uma semana, analiza-se o tipo de sala seguinte. %     
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, R1, Salas).
-ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosCriticos, [Dia|R1], [TipoSala|R2]) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
-    findall(casosCriticos(Dia, TipoSala, Arr),                                              % Isto e, os casos nos quais a ocupacao excede um dado valor.                  %
-               (member(Periodo, [p1, p2, p3, p4]),
-                %member(Dia, [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]),
-                numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
-                ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max),
-                percentagem(SomaHoras, Max, Percentagem),
-                ceiling(Percentagem, Arr),                  % O valor da percentagem e arredondado por excesso
-                Percentagem > Threshhold),                  
-            CasosUnsorted),
-    sort(3, @=<, CasosUnsorted, Casos),                     % No contexto de um dado dia e sala, a lista de casos e ordenada de forma crescente com base na percentagem  
-    ocupacaoCritica(HoraInicio, HoraFim, Threshhold, CasosNext, [Dia|R1], R2),
-    append(Casos, CasosNext, CasosCriticos).
-*/
-% O predicado acima definido assume um criterio de ordenacao baseado num conjunto de fatores, 'agrupando' os casos criticos por dia numa primeira instancia,      %
-% por tipo de sala no contexto de um dia especifico e com base na percentagem de ocupacao no contexto de um dia e tipo de sala. Segue-se um exemplo de interacao. %
-% ?- ocupacaoCritica(8, 12.5, 85, Resultados).                                                                                                                                                                                         
-% Resultados = [casosCriticos(segunda-feira,grandesAnfiteatros,89),casosCriticos(segunda-feira,grandesAnfiteatros,95),     /* Segunda - grandesAnfiteatros */     %
-%               casosCriticos(segunda-feira,pequenosAnfiteatros,93),                                                       /* Segunda - pequenosAnfiteatros */    %
-%               casosCriticos(sexta-feira,labsQuimica,89)]                                                                 /* Sexta - labsQuimica */              %
-% Este resultado e consistente com o exemplo dado no enunciado. No entanto, nao esta claro que seja este o criterio pretendido.                                   %
-% Como tal, segue-se a implementacao de um predicado que se baseia na aplicacao do predicado built-in sort/2                                                      %
 
 ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
     findall(casosCriticos(Dia, TipoSala, Arr),             % estes sao os casos nos quais a ocupacao excede um dado valor.                %
@@ -182,8 +122,9 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
                 Percentagem > Threshhold),                  
             Tuplos),
     sort(Tuplos, Casos).   
-                                 
-% And Now For Something Completely Different
+  /* ------------------------------------------ */                                 
+ /* And Now For Something Completely Different */
+/* ------------------------------------------ */
 /*
                       Lado 1
                 X1      X2      X3
@@ -227,8 +168,13 @@ checkRestricoes([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
     checkRestricoes(T, X1, X2, X3, X4, X5, X6, X7, X8).
 
 
+  /* ---------- */
+ /* Auxiliares */
+/* ---------- */
 
-% Auxiliares
+ehPeriodo(Periodo, P) :-                % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
+    sub_atom(Periodo, 1, 1, _, Num),    % Este predicado determina que Num corresponde ao numero do periodo,
+    sub_atom(P, _, _, _, Num).          % seguindo-se a condicao que este Num esta presente no semestre.   
 
 discFinder(ListaTurnos, ListaDisciplinas) :-      % Encontra as disciplinas associadas a uma dada lista de IDs de turnos.
     findall(Disciplina, (member(ID, ListaTurnos), evento(ID, Disciplina, _, _, _)), Lista),
@@ -252,34 +198,3 @@ switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elemento
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
     switcharoo(R1, R2).                    
 
-ehPeriodo(Periodo, P) :-                % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
-    sub_atom(Periodo, 1, 1, _, Num),    % Este predicado determina que Num corresponde ao numero do periodo,
-    sub_atom(P, _, _, _, Num).          % seguindo-se a condicao que este Num esta presente no semestre.   
-
-/*
-           __-----_.                        ______
-          /  \      \           o  O  O   _(      )__
-         /    |  |   \_---_   o._.      _(           )_
-        |     |            \   | |""""(_   Let's see... )
-        |     |             |@ | |    (_               _)
-         \___/   ___       /   | |      (__          _)
-           \____(____\___/     | |         (________)
-           |__|                | |          |
-           /   \-_             | |         |'
-         /      \_ "__ _       !_!--v---v--"
-        /         "|  |>)      |""""""""|
-       |          _|  | ._--""||        |
-       _\_____________|_|_____||________|_
-      /                                   \
-     /_____________________________________\
-     /                                     \
-    /_______________________________________\
-    /                                       \
-   /_________________________________________\
-        {                               }
-        <_______________________________|
-        |                               >
-        {_______________________________|               ________
-        <                               }              / SNOOPY \
-        |_______________________________|             /__________\
-\|/       \\/             \||//           |//                       \|/    |/ */
