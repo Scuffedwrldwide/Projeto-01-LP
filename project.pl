@@ -14,7 +14,7 @@ eventosSemSalasDiaSemana(DiaSemana, Eventos) :-             % Lista de eventos s
     intersection(NoDia, EventosSemSala, Eventos).
 
 eventosSemSalasPeriodo([], []).
-eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-
+eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-       % Lista de eventos sem sala num dado dia da semana
     findall(ID, 
                 (horario(ID, _, _, _, _, P),             
                  member(Periodo, Periodos),
@@ -88,7 +88,7 @@ evolucaoHorasCurso([Ano|R1], Curso, [(Ano,p1,Horas1),   % Lista de tuplos compos
  /* Ocupacoes Criticas de Slas */
 /* -------------------------- */
 
-ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :-
+ocupaSlot(HoraInicioDada, HoraFimDada, HoraInicioEvento, HoraFimEvento, Horas) :- % Verifica se um dado evento incide sobre um dado slot
     (HoraInicioDada < HoraFimEvento),
     (HoraFimDada > HoraInicioEvento),
     Horas is min(HoraFimDada, HoraFimEvento) - max(HoraInicioDada, HoraInicioEvento).
@@ -122,6 +122,7 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
                 Percentagem > Threshhold),                  
             Tuplos),
     sort(Tuplos, Casos).   
+
 
   /* ------------------------------------------ */                                 
  /* And Now For Something Completely Different */
@@ -193,7 +194,7 @@ dias(Dias) :- Dias = [segunda-feira, terca-feira, quarta-feira, quinta-feira, se
 bubbleSort(ToSort, Sorted) :-
     switcharoo(ToSort, Sort1), !,       % Apos a troca de elementos, a chamada recursiva  %
     bubbleSort(Sort1, Sorted).          % e efetuada ate nao serem possiveis mais trocas. %
-bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista aordenar e a ordenada sao iguais.
+bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a ordenar e a ordenada sao iguais.
 
 switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos e necessaria.
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
