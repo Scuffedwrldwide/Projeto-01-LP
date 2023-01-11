@@ -30,17 +30,17 @@ eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-       % Lista de eventos s
 /* ----------------- */
 
 organizaEventos(Eventos, Periodo, EventosNoPeriodo) :-
-    organizaEventos(Eventos, Periodo, [], ToSort), sort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os periodos encontrados.
+    organizaEventos(Eventos, Periodo, [], ToSort), sort(ToSort, EventosNoPeriodo).    % Inclui uma variavel acumuladora para os eventos encontrados.
                                                         
-organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).     % Caso base - uma lista vazia de IDs implica que todos os eventos ja se encontram organizados
+organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo) :- !. % Caso base - uma lista vazia de IDs implica que todos os eventos ja se encontram organizados
 
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
     horario(ID, _, _, _, _, P),
-    (
-        ((P = Periodo; ehPeriodo(Periodo, P)),                   % Se o evento estiver no periodo pretendido, ou num semestre que o englobe, adiciona-o a lista de eventos
-        organizaEventos(R, Periodo, [ID|Acc], EventosNoPeriodo));
-        organizaEventos(R, Periodo, Acc, EventosNoPeriodo)    % Caso contrario, o evento nao e adicionado
-    ).
+    ehPeriodo(Periodo, P), !,                                    % Se o evento estiver no periodo pretendido, ou num semestre que o englobe, adiciona-o a lista de eventos
+    organizaEventos(R, Periodo, [ID|Acc], EventosNoPeriodo).     % Caso contrario, o evento nao e adicionado, devido ao predicado abaixo definido
+
+organizaEventos([_|R], Periodo, Acc, EventosNoPeriodo) :-
+    organizaEventos(R, Periodo, Acc, EventosNoPeriodo).          
 
 eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.    % Verifica se um evento tem uma duracao menor que a dada
 
@@ -60,7 +60,7 @@ organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                   
     discFinder(IDsSem1, TotalDisc1), discFinder(IDsSem2, TotalDisc2),                    % Lista de disciplinas de cada semestre
         intersection(ListaDisciplinas, TotalDisc1, Sem1), 
         intersection(ListaDisciplinas, TotalDisc2, Sem2Temp),
-    ((member(DupedDisc, Sem1), member(DupedDisc, Sem2Temp), delete(Sem2Temp, DupedDisc, Sem2)); Sem2Temp = Sem2), % Evita a duplicacao de disciplinas
+    duplicateRemover(Sem2Temp, Sem1, Sem2),      % Evita a duplicacao de disciplinas
     Sem1 \= [], Sem2 \= [].
 
 horasCurso(Periodo, Curso, Ano, TotalHoras) :-
@@ -199,3 +199,11 @@ bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a orden
 switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos e necessaria.
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
     switcharoo(R1, R2).                    
+
+duplicateRemover([], _, []).            % Caso terminal, no qual a lista de itens a remover e vazia.
+duplicateRemover([Head|Tail], List, Result) :-
+    member(Head, List),
+    !,
+    duplicateRemover(Tail, List, Result).
+duplicateRemover([Head|Tail], List, [Head|Result]) :-
+    duplicateRemover(Tail, List, Result).
