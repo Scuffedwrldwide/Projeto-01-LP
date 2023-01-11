@@ -36,10 +36,10 @@ organizaEventos([], _, EventosNoPeriodo, EventosNoPeriodo).     % Caso base - um
 
 organizaEventos([ID|R], Periodo, Acc, EventosNoPeriodo) :-
     horario(ID, _, _, _, _, P),
-    ((P = Periodo; ehPeriodo(Periodo, P)) ->                    % Se o evento estiver no periodo pretendido, ou num semestre que o englobe, adiciona-o a lista de eventos
-        organizaEventos(R, Periodo, [ID|Acc], EventosNoPeriodo)
-    ;
-        organizaEventos(R, Periodo, Acc, EventosNoPeriodo)      % Caso contrario, o evento nao e adicionado
+    (
+        ((P = Periodo; ehPeriodo(Periodo, P)),                   % Se o evento estiver no periodo pretendido, ou num semestre que o englobe, adiciona-o a lista de eventos
+        organizaEventos(R, Periodo, [ID|Acc], EventosNoPeriodo));
+        organizaEventos(R, Periodo, Acc, EventosNoPeriodo)    % Caso contrario, o evento nao e adicionado
     ).
 
 eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.    % Verifica se um evento tem uma duracao menor que a dada
@@ -60,7 +60,7 @@ organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                   
     discFinder(IDsSem1, TotalDisc1), discFinder(IDsSem2, TotalDisc2),                    % Lista de disciplinas de cada semestre
         intersection(ListaDisciplinas, TotalDisc1, Sem1), 
         intersection(ListaDisciplinas, TotalDisc2, Sem2Temp),
-    ((member(DupedDisc, Sem1), member(DupedDisc, Sem2Temp)) -> delete(Sem2Temp, DupedDisc, Sem2); Sem2Temp = Sem2), % Evita a duplicacao de disciplinas, como explicado acima
+    ((member(DupedDisc, Sem1), member(DupedDisc, Sem2Temp), delete(Sem2Temp, DupedDisc, Sem2)); Sem2Temp = Sem2), % Evita a duplicacao de disciplinas
     Sem1 \= [], Sem2 \= [].
 
 horasCurso(Periodo, Curso, Ano, TotalHoras) :-
@@ -81,7 +81,7 @@ evolucaoHorasCurso([Ano|R1], Curso, [(Ano,p1,Horas1),   % Lista de tuplos compos
     horasCurso(p2, Curso, Ano, Horas2),
     horasCurso(p3, Curso, Ano, Horas3),
     horasCurso(p4, Curso, Ano, Horas4),
-    evolucaoHorasCurso(R1, Curso, R2).                  % Apura-se a evolucao de horas de cada ano, recursivamente
+    evolucaoHorasCurso(R1, Curso, R2).                   % Apura-se a evolucao de horas de cada ano, recursivamente
 
 
   /* -------------------------- */
@@ -158,8 +158,8 @@ checkRestricoes([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
                                       (Y = X1, X = X2); (Y = X2, X = X3);
                                       (Y = X6, X = X7); (Y = X7, X = X8))
         );
-      (Restricao = frente(X, Y), ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8);   % As pessoas X e Y devem sentar-se frente a frente, num qualquer lado da mesa
-                                  (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8))   % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
+      (Restricao = frente(X, Y), ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8);       % As pessoas X e Y devem sentar-se frente a frente, num qualquer lado da mesa
+                                  (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8))       % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
         );
       (Restricao = naoFrente(X, Y), \+ ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8); % As pessoas X e Y nao se devem sentar frente a frente, num qualquer lado da mesa
                                         (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8)) % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
