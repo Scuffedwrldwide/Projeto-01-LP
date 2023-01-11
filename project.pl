@@ -122,6 +122,7 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
                 Percentagem > Threshhold),                  
             Tuplos),
     sort(Tuplos, Casos).   
+
   /* ------------------------------------------ */                                 
  /* And Now For Something Completely Different */
 /* ------------------------------------------ */
@@ -197,4 +198,3 @@ bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista aordena
 switcharoo([X, Y|R], [Y,X|R]) :- X > Y. % Caso base, no qual a troca de elementos e necessaria.
 switcharoo([Z|R1], [Z|R2]) :-           % Caso recursivo, que 'investiga' a lista em profundidade.
     switcharoo(R1, R2).                    
-
