@@ -14,7 +14,7 @@ eventosSemSalasDiaSemana(DiaSemana, Eventos) :-             % Lista de eventos s
     intersection(NoDia, EventosSemSala, Eventos).
 
 eventosSemSalasPeriodo([], []).
-eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-       % Lista de eventos sem sala num dado dia da semana
+eventosSemSalasPeriodo(Periodos, SemSalaNoPeriodo) :-       % Lista de eventos sem sala nos periodos dados
     findall(ID, 
                 (horario(ID, _, _, _, _, P),             
                  member(Periodo, Periodos),
@@ -44,14 +44,14 @@ organizaEventos([_|R], Periodo, Acc, EventosNoPeriodo) :-
 
 eventosMenoresQueBool(ID, Duracao) :- horario(ID, _, _, _, Time, _), Time =< Duracao.    % Verifica se um evento tem uma duracao menor que a dada
 
-eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-                                    % Lista de eventos com duracao menor que a dada
+eventosMenoresQue(Duracao, ListaEventosMenoresQue) :-   % Lista de eventos com duracao menor que a dada
     findall(ID, eventosMenoresQueBool(ID, Duracao), ListaEventosMenoresQue).
 
-procuraDisciplinas(Curso, ListaDisciplinasCurso) :-                                      % Lista de disciplinas de um dado curso
+procuraDisciplinas(Curso, ListaDisciplinasCurso) :-     % Lista de disciplinas de um dado curso
     idsCurso(Curso, ListaTurnosCurso),                                                  
     discFinder(ListaTurnosCurso, ListaDisciplinasCurso).
 
-organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                            % Organiza uma dada lista de disciplinas, dividindo-a por semestres
+organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-   % Organiza uma dada lista de disciplinas, dividindo-a por semestres
     idsCurso(Curso, ListaIDsCurso),
     organizaEventos(ListaIDsCurso, p1, IDsP1), organizaEventos(ListaIDsCurso, p2, IDsP2),% Organiza os eventos relativos ao 1o e 2o periodo
         union(IDsP1, IDsP2, IDsSem1),
@@ -60,13 +60,16 @@ organizaDisciplinas(ListaDisciplinas, Curso, [Sem1, Sem2]) :-                   
     discFinder(IDsSem1, TotalDisc1), discFinder(IDsSem2, TotalDisc2),                    % Lista de disciplinas de cada semestre
         intersection(ListaDisciplinas, TotalDisc1, Sem1), 
         intersection(ListaDisciplinas, TotalDisc2, Sem2Temp),
-    duplicateRemover(Sem2Temp, Sem1, Sem2),      % Evita a duplicacao de disciplinas
+    duplicateRemover(Sem2Temp, Sem1, Sem2),                                              % Evita a duplicacao de disciplinas
     Sem1 \= [], Sem2 \= [].
 
-horasCurso(Periodo, Curso, Ano, TotalHoras) :-
+horasCurso(Periodo, Curso, Ano, TotalHoras) :-          % Total de horas de aula num dado curso, ano e periodo
     idsCurso(Curso, ListaIDsCurso, Ano),
     organizaEventos(ListaIDsCurso, Periodo, ListaIDsPeriodo),
-    findall(Time, (member(ID, ListaIDsPeriodo), horario(ID, _, _, _, Time, _)), ListaHoras),
+    findall(Time, 
+                (member(ID, ListaIDsPeriodo), 
+                 horario(ID, _, _, _, Time, _)), 
+            ListaHoras),
     sum_list(ListaHoras, TotalHoras).
 
 evolucaoHorasCurso(Curso, Evolucao) :-                  % Embora exista a possibilidade de um curso decorrer durante apenas um ano,              %
@@ -108,11 +111,11 @@ ocupacaoMax(TipoSala, HoraInicio, HoraFim, Max) :-    % Ocupacao maxima possivel
     length(ListaSalas, NumSalas),
     Max is NumSalas * (HoraFim - HoraInicio).
 
-percentagem(SomaHoras, Max, Percentagem) :-           
+percentagem(SomaHoras, Max, Percentagem) :-           % Percentagem de tempo de ocupacao relativo a um valor maximo 
     Percentagem is SomaHoras / Max * 100.
 
 ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos criticos, na forma casosCriticos(Dia, TipoSala, Percentagem), %
-    findall(casosCriticos(Dia, TipoSala, Arr),             % estes sao os casos nos quais a ocupacao excede um dado valor.                %
+    findall(casosCriticos(Dia, TipoSala, Arr),             % estes sao os casos nos quais a ocupacao excede um dado valor maximo.         %
                (member(Periodo, [p1, p2, p3, p4]),
                 member(Dia, [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]),
                 numHorasOcupadas(Periodo, TipoSala, Dia, HoraInicio, HoraFim, SomaHoras),
@@ -127,6 +130,7 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
   /* ------------------------------------------ */                                 
  /* And Now For Something Completely Different */
 /* ------------------------------------------ */
+
 /*
                       Lado 1
                 X1      X2      X3
@@ -137,8 +141,11 @@ ocupacaoCritica(HoraInicio, HoraFim, Threshhold, Casos) :- % Lista de casos crit
             +------------------------+
                 X6      X7      X8
                       Lado 2
+
+    Para os efeitos deste problema, uma pessoa na cabeceira
+    nao e considerada como estando ao lado ou a frente de outra
 */
-ocupacaoMesa(ListaPessoas, ListaRestricoes, OcupacaoMesa) :-
+ocupacaoMesa(ListaPessoas, ListaRestricoes, OcupacaoMesa) :-                % Dada uma lista de pessoas e restricoes, calcula uma possivel ocupacao da mesa
     permutation(ListaPessoas, [X1, X2, X3, X4, X5, X6, X7, X8]),            % Calcula uma possivel permutacao para a disposicao da mesa
     checkRestricoes(ListaRestricoes, X1, X2, X3, X4, X5, X6, X7, X8), !,    % Verifica se a permutacao satisfaz as restricoes
     OcupacaoMesa = [[X1, X2, X3], [X4, X5], [X6, X7, X8]].
@@ -151,20 +158,20 @@ checkRestricoes([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
       (Restricao = honra(X, Y), ((X = X4, Y = X6); (X = X5, Y = X3))        % A pessoa X deve sentar-se na cadeira X4 e a pessoa Y deve sentar-se a sua direita
         );
       (Restricao = lado(X, Y), ((X = X1, Y = X2); (X = X2, Y = X3);         % As pessoas X e Y devem sentar-se lado a lado, num qualquer lado da mesa
-                                (X = X6, Y = X7); (X = X7, Y = X8);
+                                (X = X6, Y = X7); (X = X7, Y = X8);         
                                 (Y = X1, X = X2); (Y = X2, X = X3);
                                 (Y = X6, X = X7); (Y = X7, X = X8))
         );
       (Restricao = naoLado(X, Y), \+ ((X = X1, Y = X2); (X = X2, Y = X3);   % As pessoas X e Y nao se devem sentar lado a lado, num qualquer lado da mesa
-                                      (X = X6, Y = X7); (X = X7, Y = X8);   % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a seu lado
+                                      (X = X6, Y = X7); (X = X7, Y = X8);   
                                       (Y = X1, X = X2); (Y = X2, X = X3);
                                       (Y = X6, X = X7); (Y = X7, X = X8))
         );
       (Restricao = frente(X, Y), ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8);       % As pessoas X e Y devem sentar-se frente a frente, num qualquer lado da mesa
-                                  (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8))       % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
+                                  (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8))       
         );
       (Restricao = naoFrente(X, Y), \+ ((X = X1, Y = X6);(X = X2, Y = X7);(X = X3, Y = X8); % As pessoas X e Y nao se devem sentar frente a frente, num qualquer lado da mesa
-                                        (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8)) % Para este efeito, uma pessoa na cabeceira nao possui qualquer pessoa a sua frente
+                                        (Y = X1, X = X6);(Y = X2, X = X7);(Y = X3, X = X8)) 
         )
     ),
     checkRestricoes(T, X1, X2, X3, X4, X5, X6, X7, X8).
@@ -175,8 +182,8 @@ checkRestricoes([Restricao|T], X1, X2, X3, X4, X5, X6, X7, X8) :-
 /* ---------- */
 
 ehPeriodo(Periodo, P) :-                % Os eventos com mais que um periodo resultam da concatenacao de, eg., p1_p2. 
-    sub_atom(Periodo, 1, 1, _, Num),    % Este predicado determina que Num corresponde ao numero do periodo,
-    sub_atom(P, _, _, _, Num).          % seguindo-se a condicao que este Num esta presente no semestre.   
+    sub_atom(Periodo, 1, 1, _, Num),    % Este predicado determina que 'Num' corresponde ao numero do periodo, %
+    sub_atom(P, _, _, _, Num).          % seguindo-se a condicao que este esta presente no semestre.           %
 
 discFinder(ListaTurnos, ListaDisciplinas) :-      % Encontra as disciplinas associadas a uma dada lista de IDs de turnos.
     findall(Disciplina, (member(ID, ListaTurnos), evento(ID, Disciplina, _, _, _)), Lista),
@@ -191,7 +198,7 @@ idsCurso(Curso, ListaIDs, Ano) :-                 % Encontra todos os IDs dos tu
 
 dias(Dias) :- Dias = [segunda-feira, terca-feira, quarta-feira, quinta-feira, sexta-feira]. % Lista de dias da semana.
 
-bubbleSort(ToSort, Sorted) :-
+bubbleSort(ToSort, Sorted) :-           % Implementacao do algoritmo de ordenacao 'bubble sort' 
     switcharoo(ToSort, Sort1), !,       % Apos a troca de elementos, a chamada recursiva  %
     bubbleSort(Sort1, Sorted).          % e efetuada ate nao serem possiveis mais trocas. %
 bubbleSort(Sorted, Sorted).             % Caso terminal, no qual a lista a ordenar e a ordenada sao iguais.
